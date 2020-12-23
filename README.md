@@ -3,6 +3,13 @@
 ## Final Year Project
 ### University of Peradeniya-Faculty of Engineering-Department of Computer Engineering
 
+Project Collaborators:-
+
+- [Ishani Madhuwanthi](https://github.com/ishaniMadhuwanthi)
++ [Kshithija Wanniarachchi](https://github.com/kshithi)
+- [Wathsari Premathilake](https://github.com/wathsariPremathilaka)
+
+- - - - - - - - -
 
 ## Introduction
 
@@ -16,6 +23,7 @@ The machine learning and deep learning algorithms based analysis systems apply t
 Finding database and e-Resource that provide legal and legislative information is vital need for lawyers of Sri Lanka.There are current implementations but those systems does not come up with efficient solution.There also manual work is costly.We need to reduce man work from the beginning of the portal.To implement user friendly and a system which learn itself to categorize documents the keyword extraction is essential.
 
 Our client also required a machine learning module which can provide efficieny and accuracy keyword extraction and searching ability.
+
 
 ## Objectives
 
@@ -33,12 +41,14 @@ Our client also required a machine learning module which can provide efficieny a
  - Judges who are involved in the judgement and their roles
  - Lawyers who are involved in the judgement and their roles
 
+
 ## Instructions
 
 1. Clone the repository
 2. Install the python libraries
 3. If you want more legal documents to test you can download them from [here](https://www.lawnet.gov.lk/).
 4. When run the code, **Enter your file path and press Enter key.**
+
 
 ## Libraries
 
