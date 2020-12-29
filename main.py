@@ -1,62 +1,97 @@
 import pdf2text as p2t
-import keywordList as kList
-import functions as f
+import re
+
 import preprocess as pre
 import nltk.data
-#nltk.download()
+from nltk import sent_tokenize
+# nltk.download()
 
 
+# enter pdf document
 doc_path = input("Enter the path of the pdf:")
-#doc_path="pdf1.pdf"
+
+# covert pdf to text file
 p2t.pdf_to_text(doc_path)
 
+# read the text file
 file = open("myfile.txt", "rt")
 data = file.read()
 
-##.............keyword extraction..........##
+# remove page numbers
+page = re.sub(r'(\s([?,.!"]))|(?<=\[|\()(.*?)(?=\)|\])', lambda x: x.group().strip(), data)
+pageNumRegex = re.compile(r'(\([0-9]+\))')
+result = pageNumRegex.sub("", page)
 
+# pageNo = pageNumRegex.search(page)
+# print(pageNo.group(1))
 
-##
-data = data.upper()
-# print(data)
-import re
+# convert text to upper case
+result = result.upper()
+#print(result)
 
-
+# remove short forms
 def preprocess(text):
+    # vs
     text = text.replace("V.", "VS")
     text = text.replace("VS.", "VS")
+    text = text.replace("VS", "VS")
+    # primary court
+    text = text.replace("P. C.", "PRIMARY COURT")
     text = text.replace("P. C", "PRIMARY COURT")
+    text = text.replace("P.C.", "PRIMARY COURT")
+    text = text.replace("PC", "PRIMARY COURT")
+    text = text.replace("PC.", "PRIMARY COURT")
+    text = text.replace("P.C", "PRIMARY COURT")
+    # district court
     text = text.replace("D. C.", "DISTRICT COURT")
+    text = text.replace("D. C", "DISTRICT COURT")
+    text = text.replace("D.C.", "DISTRICT COURT")
+    text = text.replace("DC", "DISTRICT COURT")
+    text = text.replace("DC.", "DISTRICT COURT")
+    text = text.replace("D.C", "DISTRICT COURT")
+    # magistrate court
+    text = text.replace("M. C.", "MAGISTRATE COURT")
     text = text.replace("M. C", "MAGISTRATE COURT")
+    text = text.replace("M.C.", "MAGISTRATE COURT")
+    text = text.replace("MC", "MAGISTRATE COURT")
+    text = text.replace("MC.", "MAGISTRATE COURT")
+    text = text.replace("M.C", "MAGISTRATE COURT")
+    # supreme court
+    text = text.replace("S.C.", "SUPREME COURT")
+    text = text.replace("S. C", "SUPREME COURT")
+    text = text.replace("S.C.", "SUPREME COURT")
+    text = text.replace("SC", "SUPREME COURT")
+    text = text.replace("SC.", "SUPREME COURT")
+    text = text.replace("S.C", "SUPREME COURT")
+    # commercial high court
+    text = text.replace("CHC", "COMMERCIAL HIGH COURT")
+    # high court
+    text = text.replace("H.C.", "HIGH COURT")
+    text = text.replace("H. C", "HIGH COURT")
+    text = text.replace("H.C.", "HIGH COURT")
+    text = text.replace("HC", "HIGH COURT")
+    text = text.replace("HC.", "HIGH COURT")
+    text = text.replace("H.C", "HIGH COURT")
+    # other forms
+    text = text.replace("NO.", "NO")
     text = text.replace("HTTPS://WWW", " ")
     text = text.replace("10/31/2020", " ")
     return text
 
 
-data = preprocess(data)
-# print(data)
+result = preprocess(result)
+# print(result)
 
+# split into sentences
 sentences_list = []
-previous_judgment_list = []
-sentences_list = data.split(".")
-
+from nltk import sent_tokenize
+sentences_list = sent_tokenize(result)
 # print(sentences_list)
-####################################find date######################################
-'''
-from datetime import datetime
 
-import datefinder
-matches = list(datefinder.find_dates(data))
-if len(matches) > 0:
-		print(matches[0])   
-# date returned will be a datetime.datetime object. here we are only using the first 
-#match.
- #print(matches)
-else:
-   print ('No dates found')
-'''
+previous_judgment_list = []
 
-######################################find name###############################################################
+
+# ................find case name.............#
 
 name = ''
 for sentence in sentences_list:
@@ -65,10 +100,12 @@ for sentence in sentences_list:
         name = sentence
     break
 
-######################################################################### find court ######################################################
+
+
+# ............... find court ................#
 
 court_search = ["PRIMARY COURT", "DISTRICT COURT", "MAGISTRATE COURT", "SUPREME COURT", "COURT OF APPEAL",
-                "LABOUR COURTS", "JUDICIAL SERVICE COMMISION", "C.R"]
+                "LABOUR COURTS", "JUDICIAL SERVICE COMMISSION", "C.R"]
 count = 0;
 for sentence in sentences_list:
     for i in range(8):
@@ -77,8 +114,46 @@ for sentence in sentences_list:
             if count == 1:
                 print("Court and Reference Number:" + sentence)
 
-####################################################################find previous cases###############################################
 
+
+# ...............find judgement date........#
+
+print('Judgment date:')
+date_format = "\d{1,2}\w{0,2}\s\w+\W\s\d\d\d\d"   # 3RD FEBRUARY, 1887
+matches = re.finditer(date_format, result, re.MULTILINE)
+date_list=[] # get all the dates in the text
+
+for matchNum, match in enumerate(matches, start=1):
+
+    date_list = "{match}".format(match=match.group())
+    print(date_list)
+
+    for groupNum in range(0, len(match.groups())):
+        groupNum = groupNum + 1
+
+        print("{group}".format(group=match.group(groupNum)))
+
+# find the nearest date (judgement date)
+#   for i in range(0,len(date_list)):
+#       print(date_list[i])
+
+
+# ................judges names and decision...............#
+
+def check(sentences_list, words):
+    res = [all([k in s for k in words]) for s in sentences_list]
+    return [sentences_list[i] for i in range(0, len(res)) if res[i]]
+
+
+words = ['J.']
+judges_names = check(sentences_list, words)
+print('Judges names and decision: ', *judges_names, sep="\n")
+
+'''
+there is problem that if there is any word with "J." it also taken as a judge name
+'''
+
+# .................find previous cases.......#
 
 previous_judgments = ["THE CASE OF", "THE JUDGMENT OF", "VIDE", "VS", "HELD IN"]
 count = 0
@@ -106,30 +181,10 @@ for p in previous_judgment_list:
 
 # print(name)
 
-#####################keyword extraction -just tfidf################################################################
 
 
-vocab_dict, arr = pre.textProcessing(data)
-tf = f.computeTF(vocab_dict, arr)
-idf = f.computeIDF([vocab_dict])
-tfidf = f.computeTfidf(tf, idf)
 
-with open("keywords.txt", "w") as outfile:
-    outfile.write("\n".join(tfidf))
-
-print('keywords:')
-print(tfidf)
-
-##################################extra######################3
-
-# import nltk
-# nltk.download('punkt')
-# tokens = nltk.word_tokenize(data)
-# print(tokens[0])
-# sentences_with_word.append(sentence)
-
-
-#....2020/12/11...keyword extraction using nlp
+#.............keyword extraction...............#
 
 
 
