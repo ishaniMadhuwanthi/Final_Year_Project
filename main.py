@@ -1,3 +1,5 @@
+from spacy.lang.en.tokenizer_exceptions import string
+
 import pdf2text as p2t
 import re
 
@@ -74,6 +76,7 @@ def preprocess(text):
     text = text.replace("H.C", "HIGH COURT")
     # other forms
     text = text.replace("NO.", "NO")
+    text = text.replace("RS.", "RS")
     text = text.replace("HTTPS://WWW", " ")
     text = text.replace("10/31/2020", " ")
     return text
@@ -121,21 +124,18 @@ for sentence in sentences_list:
 print('Judgment date:')
 date_format = "\d{1,2}\w{0,2}\s\w+\W\s\d\d\d\d"   # 3RD FEBRUARY, 1887
 matches = re.finditer(date_format, result, re.MULTILINE)
-date_list=[] # get all the dates in the text
+date_list = []  # get all the dates in the text
 
 for matchNum, match in enumerate(matches, start=1):
 
     date_list = "{match}".format(match=match.group())
     print(date_list)
+    # year_list = [int(i) for i in date_list.split() if i.isdigit()]
+    # print(year_list)
 
     for groupNum in range(0, len(match.groups())):
         groupNum = groupNum + 1
-
         print("{group}".format(group=match.group(groupNum)))
-
-# find the nearest date (judgement date)
-#   for i in range(0,len(date_list)):
-#       print(date_list[i])
 
 
 # ................judges names and decision...............#
