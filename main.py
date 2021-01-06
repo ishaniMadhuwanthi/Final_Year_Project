@@ -1,5 +1,5 @@
+import spacy
 from spacy.lang.en.tokenizer_exceptions import string
-
 import pdf2text as p2t
 import re
 
@@ -7,7 +7,6 @@ import preprocess as pre
 import nltk.data
 from nltk import sent_tokenize
 # nltk.download()
-
 
 # enter pdf document
 doc_path = input("Enter the path of the pdf:")
@@ -79,6 +78,7 @@ def preprocess(text):
     text = text.replace("RS.", "RS")
     text = text.replace("HTTPS://WWW", " ")
     text = text.replace("10/31/2020", " ")
+    text = text.replace("-", " ")
     return text
 
 
@@ -89,7 +89,7 @@ result = preprocess(result)
 sentences_list = []
 from nltk import sent_tokenize
 sentences_list = sent_tokenize(result)
-# print(sentences_list)
+print(sentences_list)
 
 previous_judgment_list = []
 
@@ -121,21 +121,35 @@ for sentence in sentences_list:
 
 # ...............find judgement date........#
 
-print('Judgment date:')
-date_format = "\d{1,2}\w{0,2}\s\w+\W\s\d\d\d\d"   # 3RD FEBRUARY, 1887
-matches = re.finditer(date_format, result, re.MULTILINE)
-date_list = []  # get all the dates in the text
+pattern = "\d{1,2}\w{0,2}\s\w+\W\s\d\d\d\d"
 
-for matchNum, match in enumerate(matches, start=1):
+# get dates of the txt file
+r1 = re.findall(r"\d{1,2}\w{0,2}\s\w+\W\s\d\d\d\d",result)
+# print(r1) # print all the data list
 
-    date_list = "{match}".format(match=match.group())
-    print(date_list)
-    # year_list = [int(i) for i in date_list.split() if i.isdigit()]
-    # print(year_list)
+res = [int(sub.split(', ')[1]) for sub in r1]
+# print result
+# print(res)  # print year list
 
-    for groupNum in range(0, len(match.groups())):
-        groupNum = groupNum + 1
-        print("{group}".format(group=match.group(groupNum)))
+# find the nearest date
+if len(res) > 1:
+
+    for i in range(len(res)-1):
+        if res[i] > res[i+1]:
+            x = res[i]
+            # print(res[i]) # print nearest year
+
+    # print(x)
+    matches = []
+    for match in r1:
+        if str(x) in match:
+                matches.append(match)
+
+    print('Judgment date:',matches)  # print the Judgment date
+
+else:
+    print('Judgment date:', r1)  # print the Judgment date
+
 
 
 # ................judges names and decision...............#
@@ -181,10 +195,26 @@ for p in previous_judgment_list:
 
 # print(name)
 
+# .............legal concepts....................#
+pattern1 = "\w+\s\d+\s\w\w\s\w\w\w\s\w{5}\s\w{9}\s\w\w\w\w"
+pattern2 = "\w+\s\d+\s\w\w\s\w\w\w\s\w{1,5}\s\w\w\w\w"
+pattern3 = "\w+\s\d+\s\w\w\s\w\w\w\s\w{8}\s\w{9}\s\w\w\w\w"
+# pattern3 = "\w+\w\w\w\s\w\w\s\w+\s\w+"
+
+
+concepts = []
+
+# concepts1 = re.findall(pattern1, result)
+concepts1 = [list(dict.fromkeys(re.findall(pattern1, result)))]
+concepts2 = [list(dict.fromkeys(re.findall(pattern2, result)))]
+concepts3 = [list(dict.fromkeys(re.findall(pattern3, result)))]
+
+concepts = concepts1 + concepts2
+
+print('Legal concepts used: ', concepts)
 
 
 
-#.............keyword extraction...............#
 
 
 
