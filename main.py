@@ -89,7 +89,7 @@ result = preprocess(result)
 sentences_list = []
 from nltk import sent_tokenize
 sentences_list = sent_tokenize(result)
-print(sentences_list)
+# print(sentences_list)
 
 previous_judgment_list = []
 
@@ -196,22 +196,35 @@ for p in previous_judgment_list:
 # print(name)
 
 # .............legal concepts....................#
-pattern1 = "\w+\s\d+\s\w\w\s\w\w\w\s\w{5}\s\w{9}\s\w\w\w\w"
-pattern2 = "\w+\s\d+\s\w\w\s\w\w\w\s\w{1,5}\s\w\w\w\w"
-pattern3 = "\w+\s\d+\s\w\w\s\w\w\w\s\w{8}\s\w{9}\s\w\w\w\w"
-# pattern3 = "\w+\w\w\w\s\w\w\s\w+\s\w+"
 
+pattern1 = "\bSECTION\s\d+\s\w+\s\w+\s\w+\s\w+\s+\w+\b"
+pattern2 = "\bSECTION\s\d+\s\w+\s\w+\s\w+\s\w{4}\b"
+pattern3 = "\bCOPYRIGHT\s\w+\s\w+\s\w+\s\w+\b"
+pattern4 = "\bSECTION\s\d+\s\w+\s\w+\s\w+\s\w+\s+\w+\s\w+\s\w+\s\w+\d+\s\w+\s\d+\b"
+
+match1 = re.findall(r"\bSECTION\s\d+\s\w{2}\s\w{3}\s\w+\s\w+\s+\w+\b", result)
+match2 = re.findall(r"\bSECTION\s\d+\s\w{2}\s\w+\s\w+\s\w{4}\b",result)
+match3 = re.findall(r"\bCOPYRIGHT\s\w+\s\w+\s\w+\s\w+\b",result)
+
+matches = []
+matches = match1 + match2 + match3
+# print(matches)
 
 concepts = []
+for i in matches:
+    if i not in concepts:
+        concepts.append(i)
 
-# concepts1 = re.findall(pattern1, result)
-concepts1 = [list(dict.fromkeys(re.findall(pattern1, result)))]
-concepts2 = [list(dict.fromkeys(re.findall(pattern2, result)))]
-concepts3 = [list(dict.fromkeys(re.findall(pattern3, result)))]
+print('Legal concepts used: ',concepts)
 
-concepts = concepts1 + concepts2
+# print(match1)
+# print(match2)
+# print(match3)
 
-print('Legal concepts used: ', concepts)
+
+
+
+
 
 
 
